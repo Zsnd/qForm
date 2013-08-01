@@ -29,30 +29,29 @@
 
             var event = $.Event('post');
             $form.trigger(event);
-            
+
             // We check if jQuery.validator exists on the form
             if (event.isDefaultPrevented() || !$form.valid || $form.valid()) {
 
                 $.post($form.attr('action'), $form.serializeArray())
-                    .done(function (json) {
-                        json = json || {};
-
-                        // In case of success, we redirect to the provided URL or the same page.
-                        if (json.success) {
-                            //reset form
-                            if ($form.attr("data-form-reset") != "false") {
-                                $form.get(0).reset();
-                                $form.validate().resetForm();
-                                $form.find(".control-group").removeClass("error success");
-                            }
-                            if ($form.attr("data-form-redirect")) window.location = ($form.attr("data-form-redirect"));
-
-                            $form.trigger("success", [json.data]);
-                            $form.trigger("finished");
-                        } else if (json.errors) {
-                            displayErrors.call(self, json.errors);
-                            $form.trigger("finished");
+                    .then(function (json) {
+                        if ($form.attr("data-form-reset") != "false") {
+                            $form.get(0).reset();
+                            $form.validate().resetForm();
+                            $form.find(".control-group").removeClass("error success");
                         }
+                        if ($form.attr("data-form-redirect")) window.location = ($form.attr("data-form-redirect"));
+
+                        $form.trigger("success", [json.data]);
+                        $form.trigger("finished");
+                    }, function (r) {
+                        var json = JSON.parse(r.responseText);
+                        if (json.errors) {
+                            displayErrors.call(self, json.errors);
+                        } else {
+                            displayErrors.call(self, r.responseText);
+                        }
+                        $form.trigger("finished");
                     });
             } else {
                 $form.trigger("finished");
@@ -61,81 +60,66 @@
         }
     };
 
-    //private
     var displayErrors = function (errors) {
-        var $form = this.$form, summary = [];
-        for (var i = 0; i < errors.length; i++) {
-            if (typeof errors[i] == "string") {
-                summary.push(errors.splice(i--, 1));
-            }
-        }
+        var summary, $form = this.$form;
 
-        var $summary = $form.find("[data-val-summary]"),
-                position = {
-                    my: "bottom right",
-                    at: "bottom right",
-                    viewport: $(window)
-                };
-        if (!$summary.length) {
-            $summary = $form;
-            position = {
-                my: "bottom center",
-                at: "top center",
-                viewport: $(window)
-            };
-        }
-        if (summary.length) {
-            var ul = "<ul>" + $.map(summary.join(",").split(","), function (v) {
-                return "<li>" + v + "</li>";
-            }).join("") + "</ul>";
-            $summary.qtip({
-                content: ul,
-                position: position,
-                show: {
-                    event: false,
-                    ready: true
-                },
-                hide: { /*target: $form, event: "submit",*/inactive: 3000 },
-                style: {
-                    classes: 'qtip-red qtip-shadow qtip-rounded'
-                }
-            });
-        } else {
-            $summary.qtip("destroy");
-        }
-
-        if (errors.length) {
-            $.each(errors, function (i, error) {
-                var elem = '#' + error.field.replace('.', '_').replace('[', '_').replace(']', '_'),
-                    $elem = $(elem);
-                if (!$elem.length) {
-                    elem = error.field;
-                    $elem = $('[name="' + elem + '"]');
-                }
-                var corners = ['left center', 'right center'],
-                    flipIt = $elem.hasClass("right"),
-                    message = error.message;
-
-                if (message) {
-                    $elem.qtip({
-                        content: message,
-                        position: {
-                            my: corners[flipIt ? 0 : 1],
-                            at: corners[flipIt ? 1 : 0],
-                            viewport: $(window)
-                        },
-                        show: {
-                            event: false,
-                            ready: true
-                        },
-                        hide: { /*target: $form, event: "submit",*/inactive: 3000 },
-                        style: {
-                            classes: 'qtip-red qtip-shadow qtip-rounded'
+        if (typeof errors === "string") {
+            summary = errors;
+        } else if (Object.prototype.toString.call(errors) === '[object Array]') {
+            if (errors.length) {
+                if (typeof errors[0] === "string") {
+                    summary = "<ul>" + $.map(errors, function (v) {
+                        return "<li>" + v + "</li>";
+                    }).join("") + "</ul>";
+                } else if (typeof errors[0] === "object") {
+                    //to field
+                    var e2 = [];
+                    $.each(errors, function (i, error) {
+                        var elem = '#' + error.field.replace('.', '_').replace('[', '_').replace(']', '_'),
+                            $elem = $(elem);
+                        if (!$elem.length) {
+                            elem = error.field;
+                            $elem = $('[name="' + elem + '"]');
+                            if (!$elem.length) {
+                                e2.push(error.field + ": " + error.message);
+                            } else {
+                                disttooltip($elem, error.message);
+                            }
                         }
                     });
+                    if (e2.length) {
+                        summary = '<ul class="unstyled">' + $.map(e2, function (v) {
+                            return "<li>" + v + "</li>";
+                        }).join("") + "</ul>";
+                    }
+                } else {
+                    summary = "some errors!";
                 }
-            });
+            } else {
+                summary = "some errors!";
+            }
         }
+        if (summary) {
+            var $summary = $form.find("[data-val-summary]");
+            if (!$summary.length) {
+                $summary = $form;
+            }
+            disttooltip($summary, summary, "top");
+        }
+    };
+
+    //bootstrap tooltip
+    var disttooltip = function ($el, title, placement) {
+        $el.tooltip({
+            title: title || "default message！",
+            html: true,
+            trigger: "manual",
+            placement: placement || "right",
+            container: 'body'
+        }).tooltip("show");
+        setTimeout(function () {
+            $el.tooltip("hide");
+        }, 4000);
     };
 
     var updateParsed = function () {
@@ -143,35 +127,12 @@
             settings = $form.data('validator').settings;
 
         settings.errorPlacement = function (error, element) {
-            var $elem = $(element),
-                corners = ['left center', 'right center'],
-                flipIt = $elem.hasClass("right");
+            var $elem = $(element);
 
             if (!error.is(':empty')) {
-                $elem.filter(':not(.valid)').qtip({
-                    overwrite: false,
-                    content: error,
-                    position: {
-                        my: corners[flipIt ? 0 : 1],
-                        at: corners[flipIt ? 1 : 0],
-                        viewport: $(window)
-                    },
-                    show: {
-                        event: false,
-                        ready: true
-                    },
-                    hide: { target: $("a, button"), event: 'click', inactive: 3000 },
-                    events: {
-                        hide: function (event, api) {
-                            $elem.qtip('destroy');
-                        }
-                    },
-                    style: {
-                        classes: 'qtip-red qtip-shadow qtip-rounded'
-                    }
-                }).qtip('option', 'content.text', error);
+                disttooltip($elem, error.text());
             } else {
-                $elem.qtip('destroy');
+                $elem.tooltip("hide");
             }
         };
         settings.success = $.noop;
@@ -197,6 +158,7 @@
     };
 
     $.fn.qform.defaults = {
+
     };
 
     $.fn.qform.Constructor = QForm;
@@ -210,7 +172,7 @@
         $(document).on("click.qform.data-api", '[data-toggle="qform"]', function (e) {
             var $this = $(this),
                 href = $this.attr('href'),
-                $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, ''))) //strip for ie7
+                $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, '')) || $this.closest("form")) //strip for ie7
             ;
 
             e.preventDefault();

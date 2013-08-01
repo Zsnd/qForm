@@ -8,14 +8,25 @@ jquery.qform.js 是一个jquery插件。设计这个插件是为了在asp.net mv
  - [jQuery](http://jquery.com/)
  - [jquery.validate.js](http://jqueryvalidation.org/) - 老牌验证插件
  - [jquery.validate.unobtrusive.js](http://ajax.aspnetcdn.com/ajax/mvc/3.0/jquery.validate.unobtrusive.js) - 微软提供的插件。默认配置验证需要些js代码，用了这个插件只需要写html。[说明](http://kb.cnblogs.com/page/80652/)
- - [qTip2](http://craigsworks.com/projects/qtip2/) - 功能强大的提示插件。这里用到了一个小功能点：qTip2针对form的悬浮气泡验证形式。[说明](http://craigsworks.com/projects/qtip2/demos/#validation)
- - [Bootstrap](https://github.com/twitter/bootstrap)(可选) - 默认提供了对Bootstrap forms的支持。
+ - [bootstrap-tooltip.js](http://getbootstrap.com/2.3.2/javascript.html#tooltips) - 浮动气泡，用来提示错误。
 
 ## 使用
 
 ###通过data attributes启动
 
-不需要写JavaScript，需要一个html按钮元素和一个待验证form元素。设置按钮元素的属性 `data-toggle="qform"` `data-target="#foo"` 或者 `href="#login-form"`，"#login-form"指向form元素。按钮元素是否在form元素内部无关紧要。
+不需要写JavaScript，需要一个html按钮元素和一个待验证form元素。设置按钮元素的属性 `data-toggle="qform"` 。
+
+    <!-- form -->
+    <form action="/Account/LogIn" data-form-redirect="/home/index" method="post">        
+        <h2>Please sign in</h2>
+        <input data-val="true" data-val-length-max="40" data-val-length-min="2" id="UserName" name="UserName" placeholder="UserName..." type="text" value="">
+        <input data-val="true" data-val-length-max="20" data-val-length-min="6" id="Password" name="Password" placeholder="Password..." type="password">
+        
+        <!-- submit form -->
+        <button type="submit" data-toggle="qform">登陆</button>
+    </form>
+
+当按钮元素在form元素的外面，需要设置 `data-target="#login-form"` 或者 `href="#login-form"`，"#login-form"指向form元素。
 
     <!-- Button to trigger form -->
     <a data-toggle="qform" href="#login-form">登陆</a>
