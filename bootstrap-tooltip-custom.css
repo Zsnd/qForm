@@ -1,0 +1,30 @@
+﻿body > .tooltip {
+    z-index: 1080;
+}
+
+body > .tooltip > .tooltip-inner {
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    color: #b94a48;
+    font-weight: bold;
+}
+
+body > .tooltip > .tooltip-inner > ul {
+    margin: 0;
+}
+
+body > .tooltip.top .tooltip-arrow {
+    border-top-color: #ebccd1;
+}
+
+body > .tooltip.right .tooltip-arrow {
+    border-right-color: #ebccd1;
+}
+
+body > .tooltip.left .tooltip-arrow {
+    border-left-color: #ebccd1;
+}
+
+body > .tooltip.bottom .tooltip-arrow {
+    border-bottom-color: #ebccd1;
+}
