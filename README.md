@@ -1,4 +1,4 @@
-﻿# 说明
+# 说明
 
 jquery.qform.js 是一个jquery插件。设计这个插件是为了在asp.net mvc中用悬浮气泡的形式取代默认验证形式。灵感来自[ASP.NET MVC: Displaying Client and Server Side Validation Using qTip Tooltips](http://nickstips.wordpress.com/2011/08/18/asp-net-mvc-displaying-client-and-server-side-validation-using-qtip-tooltips/)
 
@@ -7,26 +7,14 @@ jquery.qform.js 是一个jquery插件。设计这个插件是为了在asp.net mv
 ## 需求
  - [jQuery](http://jquery.com/)
  - [jquery.validate.js](http://jqueryvalidation.org/) - 老牌验证插件
- - [jquery.validate.unobtrusive.js](http://ajax.aspnetcdn.com/ajax/mvc/3.0/jquery.validate.unobtrusive.js) - 微软提供的插件。默认配置验证需要些js代码，用了这个插件只需要写html。[说明](http://kb.cnblogs.com/page/80652/)
- - [bootstrap-tooltip.js](http://getbootstrap.com/2.3.2/javascript.html#tooltips) - 浮动气泡，用来提示错误。
+ - [jquery.validate.unobtrusive.js](http://www.nuget.org/packages/Microsoft.jQuery.Unobtrusive.Validation/) - 微软提供的插件。默认配置验证需要些js代码，用了这个插件只需要写html。[说明](http://kb.cnblogs.com/page/80652/)
+ - [Bootstrap3](http://getbootstrap.com/) - Tooltips提供气泡风格的错误提示。支持Forms Validation states。
 
 ## 使用
 
 ###通过data attributes启动
 
-不需要写JavaScript，需要一个html按钮元素和一个待验证form元素。设置按钮元素的属性 `data-toggle="qform"` 。
-
-    <!-- form -->
-    <form action="/Account/LogIn" data-form-redirect="/home/index" method="post">        
-        <h2>Please sign in</h2>
-        <input data-val="true" data-val-length-max="40" data-val-length-min="2" id="UserName" name="UserName" placeholder="UserName..." type="text" value="">
-        <input data-val="true" data-val-length-max="20" data-val-length-min="6" id="Password" name="Password" placeholder="Password..." type="password">
-        
-        <!-- submit form -->
-        <button type="submit" data-toggle="qform">登陆</button>
-    </form>
-
-当按钮元素在form元素的外面，需要设置 `data-target="#login-form"` 或者 `href="#login-form"`，"#login-form"指向form元素。
+不需要写JavaScript，需要一个html按钮元素和一个待验证form元素。设置按钮元素的属性 `data-toggle="qform"` `data-target="#foo"` 或者 `href="#login-form"`，"#login-form"指向form元素。按钮元素是否在form元素内部无关紧要。
 
     <!-- Button to trigger form -->
     <a data-toggle="qform" href="#login-form">登陆</a>

@@ -38,17 +38,21 @@
                         if ($form.attr("data-form-reset") != "false") {
                             $form.get(0).reset();
                             $form.validate().resetForm();
-                            $form.find(".control-group").removeClass("error success");
+                            $form.find(".form-group").removeClass("has-success has-warning has-error");
                         }
                         if ($form.attr("data-form-redirect")) window.location = ($form.attr("data-form-redirect"));
 
                         $form.trigger("success", [json.data]);
                         $form.trigger("finished");
                     }, function (r) {
-                        var json = JSON.parse(r.responseText);
-                        if (json.errors) {
-                            displayErrors.call(self, json.errors);
-                        } else {
+                        try {
+                            var json = JSON.parse(r.responseText);
+                            if (json.errors) {
+                                displayErrors.call(self, json.errors);
+                            } else {
+                                displayErrors.call(self, r.responseText);
+                            }
+                        } catch (exp) {
                             displayErrors.call(self, r.responseText);
                         }
                         $form.trigger("finished");
@@ -56,7 +60,6 @@
             } else {
                 $form.trigger("finished");
             }
-
         }
     };
 
@@ -104,13 +107,13 @@
             if (!$summary.length) {
                 $summary = $form;
             }
-            disttooltip($summary, summary, "top");
+            disttooltip($summary, summary);
         }
     };
 
     //bootstrap tooltip
     var disttooltip = function ($el, title, placement) {
-        $el.tooltip({
+        $el.tooltip("destroy").tooltip({
             title: title || "default message！",
             html: true,
             trigger: "manual",
@@ -118,7 +121,7 @@
             container: 'body'
         }).tooltip("show");
         setTimeout(function () {
-            $el.tooltip("hide");
+            $el.tooltip("destroy");
         }, 4000);
     };
 
@@ -137,12 +140,11 @@
         };
         settings.success = $.noop;
 
-        //http://twitter.github.com/bootstrap/
         settings.highlight = function (element) {
-            $(element).parents(".control-group").removeClass("success").addClass("error");
+            $(element).closest(".form-group").removeClass("has-success has-warning has-error").addClass("has-error");
         };
         settings.unhighlight = function (element) {
-            $(element).parents(".control-group").removeClass("error").addClass("success");
+            $(element).closest(".form-group").removeClass("has-success has-warning has-error").addClass("has-success");
         };
     };
 
